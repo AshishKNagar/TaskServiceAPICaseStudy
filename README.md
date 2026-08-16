@@ -4,7 +4,9 @@ A REST API for managing tasks using .NET 8+, C#, Azure Cosmos DB and xUnit.
 
 ## Architecture
 
-TaskService follows a layered architecture inspired by Clean Architecture principles, providing separation of concerns, testability, and maintainability.
+TaskService follows a layered architecture inspired by Clean Architecture principles, providing separation of concerns, testability, and maintainability. 
+
+The architecture diagram is available in 'CaseStudy-Architecture-README.docx'.
     
  
 📁 Project Structure
