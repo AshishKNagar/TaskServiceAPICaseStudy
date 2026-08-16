@@ -1,4 +1,4 @@
-# Task Service - .NET 8+ Case Study
+# Api Development Case Study 
 
 A REST API for managing tasks using .NET 8+, C#, Azure Cosmos DB and xUnit.
 
