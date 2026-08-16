@@ -15,7 +15,11 @@ public sealed class TasksControllerTests
     private static TaskResponse Response(string id = "1") =>
         new(id, "Test", null, TaskItemStatus.Todo, 5, 5, 0,
             DateTimeOffset.UtcNow, DateTimeOffset.UtcNow);
-
+    
+    /// <summary>
+    /// Tests the Create method of the TasksController to ensure it returns a 201 Created response with the expected TaskResponse.
+    /// </summary>
+    /// <returns></returns>
     [Fact]
     public async Task Create_ShouldReturn201()
     {
@@ -31,7 +35,11 @@ public sealed class TasksControllerTests
         Assert.Equal(201, created.StatusCode);
         Assert.Equal(response, created.Value);
     }
-
+   
+    /// <summary>
+    ///     Tests the GetById method of the TasksController to ensure it returns a 200 OK response with the expected TaskResponse when a valid ID is provided.
+    /// </summary>  
+    /// <returns></returns>
     [Fact]
     public async Task GetById_ShouldReturn200()
     {
@@ -48,6 +56,10 @@ public sealed class TasksControllerTests
         Assert.Equal(response, ok.Value);
     }
 
+    /// <summary>
+    ///     Tests the GetAll method of the TasksController to ensure it returns a 200 OK response with an empty array when no tasks are available.
+    /// </summary>
+    /// <returns></returns>
     [Fact]
     public async Task GetAll_ShouldReturn200()
     {
@@ -59,6 +71,11 @@ public sealed class TasksControllerTests
 
         Assert.Equal(200, Assert.IsType<OkObjectResult>(result).StatusCode);
     }
+
+    /// <summary>
+    ///     Tests the Update method of the TasksController to ensure it returns a 200 OK response when a task is successfully updated.
+    /// </summary>
+    /// <returns></returns>
 
     [Fact]
     public async Task Update_ShouldReturn200()
@@ -73,6 +90,10 @@ public sealed class TasksControllerTests
         Assert.Equal(200, Assert.IsType<OkObjectResult>(result).StatusCode);
     }
 
+    /// <summary>
+    ///     Tests the Delete method of the TasksController to ensure it returns a 204 No Content response when a task is successfully deleted.
+    /// </summary>
+    /// <returns></returns>
     [Fact]
     public async Task Delete_ShouldReturn204()
     {

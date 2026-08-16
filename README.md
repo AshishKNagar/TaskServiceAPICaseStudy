@@ -1,42 +1,59 @@
-# Task Service - .NET 8 Case Study
+# Task Service - .NET 8+ Case Study
 
-A REST API for managing tasks using .NET 8, C#, Azure Cosmos DB and xUnit.
+A REST API for managing tasks using .NET 8+, C#, Azure Cosmos DB and xUnit.
 
 ## Architecture
 
+TaskService follows a layered architecture inspired by Clean Architecture principles, providing separation of concerns, testability, and maintainability.
+    
  
+📁 Project Structure
+
 TaskService
 │
 ├── Controllers
-│   └── TasksController
+│   └── TasksController.cs
 │
 ├── Application
 │   ├── DTOs
+│   │   ├── CreateTaskRequest.cs
+│   │   ├── UpdateTaskRequest.cs
+│   │   └── TaskResponse.cs
+│   │
 │   ├── Interfaces
+│   │   └── ITaskRepository.cs
+│   │
 │   └── Services
-│       ├── ITaskService
-│       └── TaskService
+│       ├── ITaskService.cs
+│       └── TaskService.cs
 │
 ├── Domain
 │   ├── Entities
+│   │   └── TaskItem.cs
+│   │
 │   └── Enums
+│       └── TaskItemStatus.cs
 │
 ├── Infrastructure
 │   └── CosmosDb
-│       └── CosmosTaskRepository
+│       └── CosmosTaskRepository.cs
 │
 ├── Middleware
-│   └── ExceptionHandlingMiddleware
+│   └── ExceptionHandlingMiddleware.cs
 │
 ├── Exceptions
+│   └── ...
+│
 ├── Options
+│   └── CosmosDbOptions.cs
 │
 └── Tests
-    ├── Unit
-    │   ├── Services
-    │   └── Controllers
-   
- 
+    └── Unit
+        ├── Services
+        │   └── TaskServiceTests.cs
+        │
+        └── Controllers
+            └── TasksControllerTests.cs
 
 ## Request flow
 
@@ -174,6 +191,7 @@ Covered scenarios include:
 - Update timestamps.
 - Delete existing task.
 - Delete missing task.
+- Validate status code.
 
 Controller tests verify HTTP result contracts:
 - POST -> 201 Created.

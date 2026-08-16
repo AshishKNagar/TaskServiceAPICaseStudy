@@ -1,5 +1,6 @@
 using Microsoft.Extensions.Logging;
 using Moq;
+using System.ComponentModel.DataAnnotations;
 using TaskService.Api.Application.DTOs;
 using TaskService.Api.Application.Interfaces;
 using TaskService.Api.Domain.Entities;
@@ -16,6 +17,10 @@ public sealed class TaskServiceTests
 
     private Api.Application.Services.TaskService CreateService() => new(_repository.Object, _logger.Object);
 
+    /// <summary>
+    ///     Tests that the CreateAsync method creates a new task with the specified properties and returns the created task.
+    /// </summary>
+    /// <returns></returns>
     [Fact]
     public async Task CreateAsync_ShouldCreateTask()
     {
@@ -42,6 +47,10 @@ public sealed class TaskServiceTests
             It.IsAny<TaskItem>(), It.IsAny<CancellationToken>()), Times.Once);
     }
 
+    /// <summary>
+    /// Tests that the CreateAsync method sets the CreatedAt and UpdatedAt properties of the created task to the current time.
+    /// </summary>
+    /// <returns></returns>
     [Fact]
     public async Task CreateAsync_ShouldSetCreatedAndUpdatedAt()
     {
@@ -56,6 +65,10 @@ public sealed class TaskServiceTests
         Assert.Equal(result.CreatedAt, result.UpdatedAt);
     }
 
+    /// <summary>
+    ///        Tests that the CreateAsync method allows independent values for OriginalEstimatedWork, RemainingWork, and CompletedWork.
+    /// </summary>
+    /// <returns></returns>
     [Fact]
     public async Task CreateAsync_ShouldAllowIndependentWorkValues()
     {
@@ -76,6 +89,10 @@ public sealed class TaskServiceTests
         Assert.Equal(7, result.CompletedWork);
     }
 
+    /// <summary>
+    ///       Tests that the GetByIdAsync method returns the task with the specified ID when it exists.
+    /// </summary>
+    /// <returns></returns>
     [Fact]
     public async Task GetByIdAsync_ShouldReturnTask()
     {
@@ -89,6 +106,10 @@ public sealed class TaskServiceTests
         Assert.Equal("Existing", result.Title);
     }
 
+    /// <summary>
+    ///      Tests that the GetByIdAsync method throws a TaskNotFoundException when the task with the specified ID does not exist.
+    /// </summary>
+    /// <returns></returns>
     [Fact]
     public async Task GetByIdAsync_WhenMissing_ShouldThrow()
     {
@@ -100,6 +121,10 @@ public sealed class TaskServiceTests
             CreateService().GetByIdAsync("missing", CancellationToken.None));
     }
 
+    /// <summary>
+    ///     Tests that the GetAllAsync method returns a list of tasks mapped from the repository.
+    /// </summary>
+    /// <returns></returns>
     [Fact]
     public async Task GetAllAsync_ShouldReturnMappedTasks()
     {
@@ -117,6 +142,10 @@ public sealed class TaskServiceTests
         Assert.Equal("Two", result[1].Title);
     }
 
+    /// <summary>
+    ///     Tests that the GetAllAsync method returns an empty list when there are no tasks in the repository.
+    /// </summary>
+    /// <returns></returns>
     [Fact]
     public async Task GetAllAsync_WhenEmpty_ShouldReturnEmpty()
     {
@@ -128,6 +157,10 @@ public sealed class TaskServiceTests
         Assert.Empty(result);
     }
 
+    /// <summary>
+    ///         Tests that the UpdateAsync method updates the fields of an existing task and returns the updated task.
+    /// </summary>
+    /// <returns></returns>
     [Fact]
     public async Task UpdateAsync_ShouldUpdateFields()
     {
@@ -160,6 +193,10 @@ public sealed class TaskServiceTests
         Assert.Equal(7, result.CompletedWork);
     }
 
+    /// <summary>
+    ///       Tests that the UpdateAsync method preserves the CreatedAt property and updates the UpdatedAt property of an existing task.
+    /// </summary>
+    /// <returns></returns>
     [Fact]
     public async Task UpdateAsync_ShouldPreserveCreatedAtAndChangeUpdatedAt()
     {
@@ -182,6 +219,10 @@ public sealed class TaskServiceTests
         Assert.True(result.UpdatedAt > created);
     }
 
+    /// <summary>
+    ///      Tests that the UpdateAsync method throws a TaskNotFoundException when the task with the specified ID does not exist and does not call the repository's UpdateAsync method.
+    /// </summary>
+    /// <returns></returns>
     [Fact]
     public async Task UpdateAsync_WhenMissing_ShouldThrowAndNotUpdate()
     {
@@ -197,6 +238,10 @@ public sealed class TaskServiceTests
             It.IsAny<TaskItem>(), It.IsAny<CancellationToken>()), Times.Never);
     }
 
+    /// <summary>
+    ///         Tests that the DeleteAsync method deletes an existing task with the specified ID and calls the repository's DeleteAsync method.
+    /// </summary>
+    /// <returns></returns>
     [Fact]
     public async Task DeleteAsync_WhenExists_ShouldDelete()
     {
@@ -210,6 +255,10 @@ public sealed class TaskServiceTests
             "1", It.IsAny<CancellationToken>()), Times.Once);
     }
 
+    /// <summary>
+    ///       Tests that the DeleteAsync method throws a TaskNotFoundException when the task with the specified ID does not exist and does not call the repository's DeleteAsync method.
+    /// </summary>
+    /// <returns></returns>
     [Fact]
     public async Task DeleteAsync_WhenMissing_ShouldThrowAndNotDelete()
     {
@@ -222,5 +271,73 @@ public sealed class TaskServiceTests
 
         _repository.Verify(x => x.DeleteAsync(
             It.IsAny<string>(), It.IsAny<CancellationToken>()), Times.Never);
+    }
+
+    /// <summary>
+    ///  valid status test       
+    /// </summary>
+    /// <param name="status"></param>
+    [Theory]
+    [InlineData(TaskItemStatus.Todo)]
+    [InlineData(TaskItemStatus.InProgress)]
+    [InlineData(TaskItemStatus.Done)]
+    public void CreateTaskRequest_ShouldAcceptValidStatus(
+    TaskItemStatus status)
+    {
+        // Arrange
+        var request = new CreateTaskRequest
+        {
+            Title = "Test Task",
+            Status = status
+        };
+
+        var context = new ValidationContext(request);
+
+        // Act
+        var results = request.Validate(context).ToList();
+
+        // Assert
+        Assert.DoesNotContain(
+            results,
+            x => x.MemberNames.Contains(nameof(CreateTaskRequest.Status)));
+    }
+
+    /// <summary>
+    /// Invalid status test  while creating Task status     
+    /// </summary>
+    [Fact]
+    public void CreateTaskRequest_ShouldRejectInvalidStatus()
+    {
+        var request = new CreateTaskRequest
+        {
+            Title = "Test Task",
+            Status = (TaskItemStatus)50
+        };
+
+        var context = new ValidationContext(request);
+
+        var results = request.Validate(context).ToList();
+
+        Assert.Contains(results, x =>
+            x.MemberNames.Contains(nameof(CreateTaskRequest.Status)));
+    }
+    /// <summary>
+    /// Invalid status test  while updating task status 
+    /// </summary>
+    [Fact]
+    public void UpdateTaskRequest_ShouldRejectInvalidStatus()
+    {
+        var request = new UpdateTaskRequest
+        {
+            Title = "Test Task",
+            Status = (TaskItemStatus)50
+        };
+
+        var context = new ValidationContext(request);
+
+        var results = request.Validate(context).ToList();
+
+        Assert.Contains(results, x =>
+            x.MemberNames.Contains(nameof(CreateTaskRequest.Status)));
     }
 }

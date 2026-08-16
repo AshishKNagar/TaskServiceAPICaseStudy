@@ -4,6 +4,9 @@ using TaskService.Api.Domain.Enums;
 
 namespace TaskService.Api.Domain.Entities;
 
+/// <summary>
+/// Represents a task item in the system.
+/// </summary>
 public sealed class TaskItem
 {
     [JsonProperty(PropertyName = "id")]

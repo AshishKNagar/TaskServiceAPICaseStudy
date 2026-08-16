@@ -15,6 +15,12 @@ public sealed class CosmosTaskRepository(
         options.Value.DatabaseName,
         options.Value.ContainerName);
 
+    /// <summary>
+    ///     Gets a task by its unique identifier.
+    /// </summary>
+    /// <param name="id"></param>
+    /// <param name="cancellationToken"></param>
+    /// <returns></returns>
     public async Task<TaskItem?> GetByIdAsync(string id, CancellationToken cancellationToken)
     {
         try
@@ -23,41 +29,87 @@ public sealed class CosmosTaskRepository(
                 id, new PartitionKey(id), cancellationToken: cancellationToken);
             return response.Resource;
         }
-        catch (CosmosException ex) when (ex.StatusCode == HttpStatusCode.NotFound)
+        catch (CosmosException) 
         {
             return null;
         }
     }
 
-    public async Task<IReadOnlyList<TaskItem>> GetAllAsync(CancellationToken cancellationToken)
+    /// <summary>
+    ///       Gets all tasks from the Cosmos DB container.
+    /// </summary>
+    /// <param name="cancellationToken"></param>
+    /// <returns></returns>
+
+    public async Task<IReadOnlyList<TaskItem>?> GetAllAsync(CancellationToken cancellationToken)
     {
-        var iterator = _container.GetItemQueryIterator<TaskItem>(
+        try
+        {
+            var iterator = _container.GetItemQueryIterator<TaskItem>(
             new QueryDefinition("SELECT * FROM c"));
 
-        var results = new List<TaskItem>();
-        while (iterator.HasMoreResults)
-        {
-            var response = await iterator.ReadNextAsync(cancellationToken);
-            results.AddRange(response);
+            var results = new List<TaskItem>();
+            while (iterator.HasMoreResults)
+            {
+                var response = await iterator.ReadNextAsync(cancellationToken);
+                results.AddRange(response);
+            }
+            return results;
         }
-        return results;
+        catch (CosmosException)
+        {
+            return null;
+        }
     }
+    
+    /// <summary>
+    ///     Creates a new task in the Cosmos DB container.
+    /// </summary>
+    /// <param name="task"></param>
+    /// <param name="cancellationToken"></param>
+    /// <returns></returns>
 
-    public async Task<TaskItem> CreateAsync(TaskItem task, CancellationToken cancellationToken)
+    public async Task<TaskItem?> CreateAsync(TaskItem task, CancellationToken cancellationToken)
     {
-        var response = await _container.CreateItemAsync(
-            task, new PartitionKey(task.Id), cancellationToken: cancellationToken);
-        return response.Resource;
+        try
+        {
+            var response = await _container.CreateItemAsync(
+                task, new PartitionKey(task.Id), cancellationToken: cancellationToken);
+            return response.Resource;
+        }
+        catch (CosmosException)
+        {
+            return null;
+        }
     }
-
-    public async Task<TaskItem> UpdateAsync(TaskItem task, CancellationToken cancellationToken)
+    
+    /// <summary>
+    ///     Updates an existing task in the Cosmos DB container.
+    /// </summary>
+    /// <param name="task"></param>
+    /// <param name="cancellationToken"></param>
+    /// <returns></returns>
+    public async Task<TaskItem?> UpdateAsync(TaskItem task, CancellationToken cancellationToken)
     {
-        var response = await _container.ReplaceItemAsync(
-            task, task.Id, new PartitionKey(task.Id),
-            cancellationToken: cancellationToken);
-        return response.Resource;
+        try
+        {
+            var response = await _container.ReplaceItemAsync(
+                task, task.Id, new PartitionKey(task.Id),
+                cancellationToken: cancellationToken);
+            return response.Resource;
+        }
+        catch (CosmosException)
+        {
+            return null;
+        }
     }
-
+    
+    /// <summary>
+    ///     Deletes a task by its ID from the Cosmos DB container.
+    /// </summary>
+    /// <param name="id"></param>
+    /// <param name="cancellationToken"></param>
+    /// <returns></returns>
     public async Task DeleteAsync(string id, CancellationToken cancellationToken)
     {
         await _container.DeleteItemAsync<TaskItem>(

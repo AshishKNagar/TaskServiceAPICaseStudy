@@ -8,6 +8,11 @@ public sealed class ExceptionHandlingMiddleware(
     RequestDelegate next,
     ILogger<ExceptionHandlingMiddleware> logger)
 {
+    /// <summary>
+    /// Invokes the middleware to handle exceptions that occur during the request processing pipeline.
+    /// </summary>
+    /// <param name="context"></param>
+    /// <returns></returns>
     public async Task InvokeAsync(HttpContext context)
     {
         try
@@ -15,6 +20,14 @@ public sealed class ExceptionHandlingMiddleware(
             await next(context);
         }
         catch (TaskNotFoundException ex)
+        {
+            await WriteErrorAsync(context, HttpStatusCode.NotFound, ex.Message);
+        }
+        catch (TaskCreateFailException ex)
+        {
+            await WriteErrorAsync(context, HttpStatusCode.BadRequest, ex.Message);
+        }
+        catch (TaskListNotFoundException ex)
         {
             await WriteErrorAsync(context, HttpStatusCode.NotFound, ex.Message);
         }
@@ -35,6 +48,13 @@ public sealed class ExceptionHandlingMiddleware(
         }
     }
 
+    /// <summary>
+    ///     Writes an error response to the HTTP context with the specified status code and message.
+    /// </summary>
+    /// <param name="context"></param>
+    /// <param name="statusCode"></param>
+    /// <param name="message"></param>
+    /// <returns></returns>
     private static async Task WriteErrorAsync(
         HttpContext context, HttpStatusCode statusCode, string message)
     {
