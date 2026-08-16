@@ -216,14 +216,14 @@ Controller tests verify HTTP result contracts:
 
 Not included deliberately:
 
-- Authentication/authorization
-- API versioning
-- Pagination/filtering
-- ETag optimistic concurrency
-- Retry/resilience policies
-- Full Cosmos integration suite
-- Distributed caching
-- CI/CD
+- Authentication/authorization – Secures APIs using authentication and role/permission-based authorization.
+- API versioning – Supports versioned APIs to maintain backward compatibility and enable future enhancements.
+- Pagination/filtering – Provides efficient retrieval of task collections with pagination and filtering capabilities.
+- ETag optimistic concurrency – Uses Cosmos DB ETags to prevent lost updates during concurrent modifications.
+- Retry/resilience policies – Handles transient failures using retry and resilience mechanisms.
+- Full Cosmos integration suite – Includes integration tests covering Cosmos DB CRUD operations and persistence scenarios.
+- Distributed caching – Improves performance and reduces database load through distributed caching.
+- CI/CD – Supports automated build, test, and deployment pipelines for continuous integration and delivery.
 
 ## Run
 
